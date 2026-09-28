@@ -1,0 +1,8 @@
+# 请求裁剪区域图像（归一化坐标 [0.0, 1.0]）
+float32 x1
+float32 y1
+float32 x2
+float32 y2
+---
+sensor_msgs/Image image
+bool success

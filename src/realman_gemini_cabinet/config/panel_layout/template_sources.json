@@ -1,0 +1,157 @@
+[
+  {
+    "label": "largest",
+    "template": "template_largest.json",
+    "source_image": "vision_debug/middle_black_knob_20260922_161619_873692_panel_layout_color.png",
+    "axis_center_px": [
+      550.2770385742188,
+      410.4123840332031
+    ],
+    "anchor": [
+      [
+        412.27166748046875,
+        2.0
+      ],
+      [
+        968.2127685546875,
+        2.0
+      ],
+      [
+        958.6923828125,
+        498.6174621582031
+      ],
+      [
+        409.32489013671875,
+        485.3463439941406
+      ]
+    ]
+  },
+  {
+    "label": "smallest",
+    "template": "template_smallest.json",
+    "source_image": "vision_debug/middle_black_knob_20260922_174825_451699_panel_layout_color.png",
+    "axis_center_px": [
+      636.4718017578125,
+      386.36981201171875
+    ],
+    "anchor": [
+      [
+        537.939453125,
+        119.47977447509766
+      ],
+      [
+        895.5509033203125,
+        111.43611145019531
+      ],
+      [
+        881.8836669921875,
+        435.9293212890625
+      ],
+      [
+        543.518798828125,
+        431.6826171875
+      ]
+    ]
+  },
+  {
+    "label": "left",
+    "template": "template_left.json",
+    "source_image": "vision_debug/middle_black_knob_20260923_150424_946633_panel_layout_color.png",
+    "axis_center_px": [
+      457.22357177734375,
+      395.1743469238281
+    ],
+    "anchor": [
+      [
+        347.3211364746094,
+        92.78421783447266
+      ],
+      [
+        744.5125732421875,
+        99.75059509277344
+      ],
+      [
+        732.5813598632812,
+        448.18890380859375
+      ],
+      [
+        357.00592041015625,
+        446.8268737792969
+      ]
+    ]
+  },
+  {
+    "label": "right",
+    "template": "template_right.json",
+    "source_image": "vision_debug/middle_black_knob_20260923_153749_279208_panel_layout_color.png",
+    "axis_center_px": [
+      822.8576049804688,
+      430.5108337402344
+    ],
+    "anchor": [
+      [
+        729.0635986328125,
+        181.5523681640625
+      ],
+      [
+        1092.99072265625,
+        158.76405334472656
+      ],
+      [
+        1069.008544921875,
+        483.33746337890625
+      ],
+      [
+        728.6741333007812,
+        468.11297607421875
+      ]
+    ]
+  },
+  {
+    "label": "distant_panel",
+    "template": "template_distant_panel.json",
+    "source_image": "vision_debug/middle_black_knob_20260922_175642_078985_panel_layout_color.png",
+    "annotation": "manual",
+    "anchor": [
+      [
+        312,
+        235
+      ],
+      [
+        515,
+        240
+      ],
+      [
+        514,
+        396
+      ],
+      [
+        310,
+        392
+      ]
+    ],
+    "plate_corners": [
+      [
+        373,
+        358
+      ],
+      [
+        400,
+        359
+      ],
+      [
+        400,
+        381
+      ],
+      [
+        372,
+        381
+      ]
+    ],
+    "axis_center_px": [
+      384.667755,
+      369.196899
+    ],
+    "validation": "Source self-localization accepted; no regressions on 288 other historical images. Generalization improvement not yet demonstrated on additional distant views."
+  }
+]

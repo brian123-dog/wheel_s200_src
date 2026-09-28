@@ -1,0 +1,68 @@
+{
+  "reference_image": "reference_distant_panel.png",
+  "target_id": "middle_black_knob",
+  "anchor_polygon": [
+    [
+      312,
+      235
+    ],
+    [
+      515,
+      240
+    ],
+    [
+      514,
+      396
+    ],
+    [
+      310,
+      392
+    ]
+  ],
+  "search_polygon": [
+    [
+      361,
+      347
+    ],
+    [
+      411,
+      347
+    ],
+    [
+      411,
+      391
+    ],
+    [
+      361,
+      391
+    ]
+  ],
+  "plate_corners": [
+    [
+      373,
+      358
+    ],
+    [
+      400,
+      359
+    ],
+    [
+      400,
+      381
+    ],
+    [
+      372,
+      381
+    ]
+  ],
+  "notes": "Manually annotated from failed historical image; visually inspected panel, plate and light cap. Original validation thresholds unchanged.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": "middle_black_knob_20260922_175642_078985_panel_layout.json",
+  "source_image_sha256": "aa6706c54b9002c068abf21e1131c7709d426d6c015e64597fce92eb82ee8414"
+}

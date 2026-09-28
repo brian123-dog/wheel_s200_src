@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="robot_with_gripper">
+
+    <xacro:include filename="$(find rm_description)/urdf/robot.urdf.xacro" /> 
+    <xacro:include filename="$(find crt_ctag2f90c_gripper_visualization)/urdf/crt_ctag2f90c.xacro" />
+    <xacro:include filename="$(find orbbec_description)/urdf/_gemini_335_336.urdf.xacro" />
+
+    <xacro:rml_63_description link6_type="Link6"/>
+
+    <xacro:crt_ctag2f90c />
+    
+                                                        <!-- 手爪法兰盘 (Gripper Flange) -->
+                                                        <!-- <joint name="arm_gripper_joint" type="fixed">
+                                                            <parent link="link6" />              
+                                                            <child  link="gripper_base_link" />  
+                                                            <origin xyz="0 0 0.02" rpy="0 0 0" />   
+                                                        </joint> -->
+
+    <joint name="arm_gripper_joint" type="fixed">
+        <parent link="link6" />              
+        <child  link="gripper_base_link" />  
+        <origin xyz="0 0 0.02" rpy="0 0 0" />   
+    </joint>
+
+    <joint name="arm_camera_joint" type="fixed">
+        <parent link="link6" />
+        <child link="camera_link" />
+        <origin xyz="0.06195 -0.01163 0.00658" rpy="1.56007 -1.54664 1.58747" />  
+    </joint>
+
+</robot>

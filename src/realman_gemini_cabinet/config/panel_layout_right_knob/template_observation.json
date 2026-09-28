@@ -1,0 +1,57 @@
+{
+  "reference_image": "reference_observation.png",
+  "target_id": "upper_row_right_black_knob",
+  "anchor_polygon": [
+    [
+      510,
+      5
+    ],
+    [
+      935,
+      5
+    ],
+    [
+      935,
+      315
+    ],
+    [
+      510,
+      315
+    ]
+  ],
+  "search_polygon": [
+    [
+      837,
+      325
+    ],
+    [
+      892,
+      325
+    ],
+    [
+      892,
+      386
+    ],
+    [
+      837,
+      386
+    ]
+  ],
+  "notes": "Raw RGB at the configured right-knob observation pose, captured by existing failure diagnostics; no overlay marks. Independent later frame used for validation.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": null,
+  "source_image_sha256": "4ff3d770454aeba44304cd20acc2ce955273f3027857ff935847e6a417ad0775",
+  "local_geometry": "round_knob",
+  "axis_center_reference_px": [
+    865,
+    352
+  ],
+  "body_radius_reference_px": 15.5,
+  "source_image": "/home/sunrise/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260923_211211_172262_failed_color.png"
+}

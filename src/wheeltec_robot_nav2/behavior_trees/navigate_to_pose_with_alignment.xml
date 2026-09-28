@@ -1,0 +1,143 @@
+<!--
+  ============================================================================
+  navigate_to_pose_with_alignment.xml
+  方案 B: 在标准 Nav2 BT 的 NavigateToPose 成功后，
+         通过外部 Action Client 调用 /align_to_wall。
+  
+  说明: 此 XML 保持 Nav2 原有 BT 结构不变，
+        墙面精修由外部任务节点在 Nav2 到达后发起。
+        本文件为方案 B 的说明性配置模板。
+  ============================================================================
+  
+  使用方法:
+  1. 将此文件复制到 wheeltec_robot_nav2/behavior_trees/
+  2. 在 wheeltec_robot_nav2/param/wheeltec_params/param_S200_diff.yaml 中修改:
+        bt_navigator.ros__parameters.default_nav_to_pose_bt_xml:
+          "/home/sunrise/wheel_S200_src/src/wheeltec_robot_nav2/behavior_trees/navigate_to_pose_with_alignment.xml"
+  
+  方案 A (C++ BT 插件, 如需要):
+  - 编写继承 nav2_core::BehaviorTreeEngine 的插件
+  - 在 plugin_lib_names 中注册
+  - 在 BT XML 中插入 <AlignToWall action_name="/align_to_wall" .../>
+  
+  方案 B (外部调用, 推荐优先落地):
+  - 在 vlm_nav2_interface 或 waypoint_action_publisher 中:
+    1. 调用 NavigateToPose Action 到达目标
+    2. 收到成功结果后, 创建 AlignToWall Action Client
+    3. 发送 Goal 到 /align_to_wall
+    4. 等待精修完成
+-->
+
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="NavigateThenAlign">
+      <!-- ============================================================ -->
+      <!-- 标准导航部分 (与现有 BT 保持一致) -->
+      <!-- ============================================================ -->
+      <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+        <PipelineSequence name="NavigateWithReplanning">
+          <RateController hz="1.0">
+            <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </RecoveryNode>
+          </RateController>
+          <RecoveryNode number_of_retries="1" name="FollowPath">
+            <FollowPath path="{path}" controller_id="FollowPath"/>
+            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+          </RecoveryNode>
+        </PipelineSequence>
+        <ReactiveFallback name="RecoveryFallback">
+          <GoalUpdated/>
+          <RoundRobin name="RecoveryActions">
+            <Sequence name="ClearingActions">
+              <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </Sequence>
+            <Spin spin_dist="1.57"/>
+            <Wait wait_duration="2"/>
+            <BackUp backup_dist="0.30" backup_speed="0.05"/>
+          </RoundRobin>
+        </ReactiveFallback>
+      </RecoveryNode>
+
+      <!-- ============================================================ -->
+      <!-- 墙面精修占位节点 (方案 B: 外部调用，此处仅为标记) -->
+      <!-- 方案 A 时替换为实际 AlignToWall BT 节点 -->
+      <!-- ============================================================ -->
+      <!--
+        方案 A 示例 (需编写 C++ BT 插件):
+        <AlignToWall action_name="/align_to_wall"
+                     target_distance="0.30"
+                     target_yaw="0.0"
+                     tolerance_distance="0.02"
+                     tolerance_yaw="0.017"
+                     server_timeout="35000"/>
+        
+        方案 B: 此处放置一个空操作占位，实际精修由外部 Action Client 调用。
+        当前默认使用方案 B，外部调用代码见下方注释。
+      -->
+      <Wait wait_duration="0.1"/>
+
+    </Sequence>
+  </BehaviorTree>
+</root>
+
+<!--
+  ============================================================================
+  方案 B 外部调用示例代码 (Python)
+  ============================================================================
+  将此代码段放入 vlm_nav2_interface 或 waypoint_action_publisher 中:
+
+  ```python
+  import rclpy
+  from rclpy.action import ActionClient
+  from rclpy.node import Node
+  from nav2_msgs.action import NavigateToPose
+  from base_interfaces.action import AlignToWall
+
+  class NavWithAlignment(Node):
+      def __init__(self):
+          super().__init__('nav_with_alignment')
+          self._nav_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
+          self._align_client = ActionClient(self, AlignToWall, '/align_to_wall')
+
+      async def navigate_and_align(self, goal_pose):
+          # Step 1: NavigateToPose
+          nav_goal = NavigateToPose.Goal()
+          nav_goal.pose = goal_pose
+          nav_goal.behavior_tree = ""  # 使用默认 BT
+          
+          self.get_logger().info('Sending NavigateToPose goal...')
+          nav_result = await self._nav_client.send_goal_async(nav_goal)
+          
+          if nav_result.result.result != 0:  # 检查是否成功
+              self.get_logger().error('Navigation failed.')
+              return False
+          
+          self.get_logger().info('Navigation succeeded. Starting wall alignment...')
+          
+          # Step 2: AlignToWall
+          align_goal = AlignToWall.Goal()
+          align_goal.target_distance = 0.30
+          align_goal.target_yaw = 0.0
+          align_goal.tolerance_distance = 0.02
+          align_goal.tolerance_yaw = 0.017
+          align_goal.laser_frame = 'laser_link'
+          align_goal.camera_frame = 'camera_link'
+          
+          align_result = await self._align_client.send_goal_async(align_goal)
+          
+          self.get_logger().info(
+              f'Alignment result: success={align_result.result.success}, '
+              f'final_dist_err={align_result.result.final_distance_error:.3f}, '
+              f'final_yaw_err={align_result.result.final_yaw_error:.3f}'
+          )
+          return align_result.result.success
+  ```
+
+  如果已有 Nav2 Waypoint Follower，修改方式:
+  在 waypoint_action_publisher 中的到达回调里，
+  追加上述 AlignToWall Action Client 调用逻辑。
+  ============================================================================
+-->

@@ -1,0 +1,11 @@
+# Request
+int64 waypoint_index
+bool run_full_task
+---
+# Response
+bool arm_task_start
+bool arm_task_done
+bool success
+int32 failed_stage
+int32 task_id
+string message

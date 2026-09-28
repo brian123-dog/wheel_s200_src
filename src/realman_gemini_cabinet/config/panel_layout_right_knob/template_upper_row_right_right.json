@@ -1,0 +1,56 @@
+{
+  "reference_image": "reference_right.png",
+  "target_id": "upper_row_right_black_knob",
+  "anchor_polygon": [
+    [
+      729.0635986328125,
+      181.5523681640625
+    ],
+    [
+      1092.99072265625,
+      158.76405334472656
+    ],
+    [
+      1069.008544921875,
+      483.33746337890625
+    ],
+    [
+      728.6741333007812,
+      468.11297607421875
+    ]
+  ],
+  "search_polygon": [
+    [
+      969.9829005241394,
+      490.8223780632019
+    ],
+    [
+      1018.3602391242981,
+      490.8223780632019
+    ],
+    [
+      1018.3602391242981,
+      545.7966264724731
+    ],
+    [
+      969.9829005241394,
+      545.7966264724731
+    ]
+  ],
+  "notes": "Upper row rightmost black round-base knob, to the right of yellow button. Lower row excluded. Shaft estimated by circular body, not highlight or handle.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": "middle_black_knob_20260923_153749_279208_panel_layout.json",
+  "source_image_sha256": "737bfeab056f085f0c3e4e6df99143b30305dffa77a27ce146fe2b07dbd920c7",
+  "local_geometry": "round_knob",
+  "axis_center_reference_px": [
+    994.1715698242188,
+    515.0110473632812
+  ],
+  "body_radius_reference_px": 14.659799575805664
+}

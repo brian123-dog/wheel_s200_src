@@ -1,0 +1,128 @@
+{
+  "factory": "一号厂房",
+  "point_id": "P002",
+  "point_name": "1号电柜",
+  "task_type": "meter_inspection",
+  "meter_count": 4,
+  "camera_topic": "/camera_dcw2/color/image_raw",
+  "meters": [
+    {
+      "meter_id": "QR001",
+      "meter_name": "lower_left_red_button",
+      "meter_type": "qr_marker",
+      "pose": {
+        "x": -0.331,
+        "y": -0.004,
+        "z": 0.578,
+        "yaw": 0.0,
+        "pitch": 0.0,
+        "focus_distance": 0.58
+      },
+      "submit_field": "左下方红色按钮"
+    },
+    {
+      "meter_id": "QR002",
+      "meter_name": "upper_meters",
+      "meter_type": "qr_marker",
+      "pose": {
+        "x": -0.407,
+        "y": 0.088,
+        "z": 0.793,
+        "yaw": 0.0,
+        "pitch": 0.0,
+        "focus_distance": 0.8
+      },
+      "submit_field": "上方表计组"
+    },
+    {
+      "meter_id": "QR003",
+      "meter_name": "middle_black_knob",
+      "meter_type": "qr_marker",
+      "pose": {
+        "x": -0.194,
+        "y": -0.003,
+        "z": 0.612,
+        "yaw": 0.0,
+        "pitch": 0.0,
+        "focus_distance": 0.62
+      },
+      "submit_field": "黑色旋钮"
+    },
+    {
+      "meter_id": "QR004",
+      "meter_name": "rightmost_green_rocker",
+      "meter_type": "qr_marker",
+      "pose": {
+        "x": -0.331,
+        "y": 0.044,
+        "z": 0.626,
+        "yaw": 0.0,
+        "pitch": 0.0,
+        "focus_distance": 0.63
+      },
+      "submit_field": "右侧绿色摇杆"
+    }
+  ],
+  "qr_data": {
+    "position": [
+      {
+        "name": "lower_left_red_button",
+        "position": {
+          "x": -0.3308,
+          "y": -0.0042,
+          "z": 0.5783
+        },
+        "orientation": {
+          "x": 0.0096,
+          "y": -0.7286,
+          "z": 0.0076,
+          "w": 0.6848
+        }
+      },
+      {
+        "name": "upper_meters",
+        "position": {
+          "x": -0.4068,
+          "y": 0.0877,
+          "z": 0.7929
+        },
+        "orientation": {
+          "x": -0.001,
+          "y": -0.7098,
+          "z": -0.0002,
+          "w": 0.7044
+        }
+      },
+      {
+        "name": "middle_black_knob",
+        "position": {
+          "x": -0.1939,
+          "y": -0.0029,
+          "z": 0.6122
+        },
+        "orientation": {
+          "x": 0.0046,
+          "y": -0.7171,
+          "z": -0.0036,
+          "w": 0.697
+        }
+      },
+      {
+        "name": "rightmost_green_rocker",
+        "position": {
+          "x": -0.3308,
+          "y": 0.0437,
+          "z": 0.6262
+        },
+        "orientation": {
+          "x": 0.0096,
+          "y": -0.7286,
+          "z": 0.0076,
+          "w": 0.6849
+        }
+      }
+    ]
+  },
+  "saved_file": "/home/sunrise/wheel_S200_src/src/qr_detector/qr_results/qr_20260523_153714_465.json",
+  "timestamp": "20260523_153714_465"
+}

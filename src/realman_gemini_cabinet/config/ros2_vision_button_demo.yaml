@@ -1,0 +1,45 @@
+cabinet_frame: base_link
+
+vision:
+  default_rpy_base: [3.1416, 0.0, 0.0]
+  min_pixels: 10
+  depth_window_px: 7
+  depth_scale_m: 0.001
+  min_depth_m: 0.15
+  max_depth_m: 1.50
+  workspace_bounds:
+    x: [-0.20, 1.00]
+    y: [-0.80, 0.80]
+    z: [-0.20, 1.20]
+  targets:
+    start_button:
+      kind: button
+      rgb_min: [180, 0, 0]
+      rgb_max: [255, 90, 90]
+      min_pixels: 10
+      depth_window_px: 9
+      offset_base_m: [0.0, 0.0, 0.0]
+      rpy_base: [3.1416, 0.0, 0.0]
+
+default_contact:
+  approach_speed_mps: 0.003
+  servo_period_s: 0.1
+  max_contact_travel_m: 0.015
+  timeout_s: 5.0
+  contact_force_n: 5.0
+
+sequence:
+  - name: start_button
+    skill: button
+    target:
+      source: camera
+      detection: start_button
+      kind: button
+    params:
+      pre_offset_m: 0.05
+      press_start_offset_m: 0.008
+      retract_m: 0.03
+      approach_axis: z
+      approach_sign: -1.0
+      approach_offset_frame: tool
+      move_speed_mps: 0.03

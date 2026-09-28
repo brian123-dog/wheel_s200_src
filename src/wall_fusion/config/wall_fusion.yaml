@@ -1,0 +1,73 @@
+# =============================================================================
+# wall_fusion 参数配置文件
+# 多传感器融合墙面精修 (Wall Alignment)
+# =============================================================================
+wall_fusion_server:
+  ros__parameters:
+
+    # ------ 话题与坐标系 ------
+    scan_topic: "/scan"
+    depth_points_topic: "/camera_dcw2/depth/points"   # DCW2 车载相机 (namespace=camera_dcw2)
+    cmd_vel_topic: "/cmd_vel"
+    base_frame: "base_link"
+    laser_frame: "laser_link"
+    camera_frame: "camera_link"
+
+    # ------ 速度限制 (抑制 S200 底盘随机打滑) ------
+    max_linear_speed: 0.04       # m/s, 线速度上限
+    max_angular_speed: 0.06      # rad/s, 角速度上限
+
+    # ------ PD 控制参数 (无积分项，禁止 I 项) ------
+    kp_angular: 1.2              # 角度 P 增益
+    kd_angular: 0.15             # 角度 D 增益
+    kp_linear: 0.5               # 距离 P 增益 (当前未使用，仅纯角度控制)
+    kd_linear: 0.05              # 距离 D 增益 (当前未使用，仅纯角度控制)
+
+    # ------ 死区补偿 & 稳定阶段参数 ------
+    min_angular_fine: 0.035      # FINE 阶段最小有效角速度 (rad/s), 补偿 S200 静摩擦死区
+    stab_damping_gain: 0.3       # STABILIZING 阶段增益系数 (<1), 弱阻尼微调
+    stab_max_angular_ratio: 0.3  # STABILIZING 阶段最大角速度比例 (0.3 = max_ang * 0.3)
+    stab_confirm_frames: 3       # STABILIZING 连续确认帧数 (P1-5: 3帧≈150ms)
+    fusion_lost_tolerance_frames: 10  # 传感器融合丢失容忍帧数
+    control_period: 0.05         # 控制周期 (s), 对应 20Hz
+    fine_deadzone_yaw_thresh: 0.001  # FINE 死区补偿触发阈值 (rad), 误差小于此值不补偿
+
+    # ------ 状态机参数 ------
+    stabilizing_duration: 1.2    # 稳定确认时间 (s)
+    timeout_duration: 20.0       # 总超时时间 (s), P1-5: 放宽到20s
+    angle_threshold_coarse: 0.12 # 粗调角度阈值 (rad), ~6.9°, P1-5: 放宽加快粗调收敛
+    dist_threshold_coarse: 0.06  # 粗调距离阈值 (m)
+
+    # ------ 消息同步 & 新鲜度 ------
+    sync_slop: 0.08              # message_filters 软同步容差 (s)
+    sync_queue: 10               # 同步队列长度
+    data_stale_timeout: 0.5      # 数据过期阈值 (s), 超过此时间传感器降权
+
+    # ------ 野值过滤 (防 RANSAC/深度误配导致状态机震荡) ------
+    # 依据: 底盘最大角速度 0.06 rad/s × 控制周期 0.1s = 0.006 rad/帧,
+    #       乘安全系数后取 0.10 rad(5.7°): 容纳测量噪声(±1~2°)与真实运动,
+    #       拒绝数十度级假跳变。若误拒频发(日志出现 "persistent after N rejects")可加大。
+    max_yaw_jump_rad: 0.10           # 允许的单帧最大角度误差跳变 (rad)
+    max_consecutive_jump_rejects: 5  # 连续拒绝上限, 超限则接受为真实变化(防锁死)
+
+    # ------ 激光处理参数 ------
+    laser_angle_range: 1.22      # 前方取点角度范围 ±70° (rad)
+    laser_min_range: 0.15        # 激光最小有效距离 (m)
+    laser_max_range: 2.5         # 激光最大有效距离 (m)
+    ransac_iterations: 80        # RANSAC 迭代次数
+    ransac_distance_thresh: 0.03  # RANSAC 内点距离阈值 (m), 放宽以降低丢帧概率
+    laser_min_inliers: 12        # 激光最小内点数
+    laser_max_inliers: 30        # 激光归一化最大内点数
+
+    # ------ 深度相机处理参数 ------
+    depth_roi_x_min: 0.15        # ROI X 方向最小值 (m)
+    depth_roi_x_max: 1.2         # ROI X 方向最大值 (m)
+    depth_roi_y_min: -1.0        # ROI Y 方向最小值 (m), 扩大范围防止旋转时墙面走出视野
+    depth_roi_y_max: 1.0         # ROI Y 方向最大值 (m)
+    depth_roi_z_min: 0.1         # ROI Z 方向最小值 (m)
+    depth_roi_z_max: 0.6         # ROI Z 方向最大值 (m)
+    depth_max_points: 400        # 降采样后最大点数
+    depth_min_points: 80         # 深度最小有效点数
+    depth_blind_distance: 0.25   # 结构光盲区距离 (m), <此距离降权
+    depth_far_distance: 1.5      # 远距离衰减起始 (m)
+    depth_planarity_thresh: 0.15 # 平面度阈值 (eigvals[0]/eigvals[2])

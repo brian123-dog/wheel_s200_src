@@ -1,0 +1,15 @@
+/**:
+  ros__parameters:
+    # Model settings
+    model_path: ""                          # empty = use models/yoloe-11s-seg.pt in package dir
+    device: "cpu"                           # "cpu", "cuda:0", etc.
+
+    # Camera input
+    image_topic: "/camera_dcw2/color/image_raw"
+
+    # Detection defaults (used when service request omits fields)
+    default_confidence: 0.25
+    default_categories: ["meter", "switch", "valve", "indicator_light"]
+
+    # Debug
+    publish_debug_image: true

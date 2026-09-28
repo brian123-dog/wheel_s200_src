@@ -1,0 +1,68 @@
+{
+  "reference_image": "reference_largest.png",
+  "target_id": "middle_black_knob",
+  "anchor_polygon": [
+    [
+      412.27166748046875,
+      2.0
+    ],
+    [
+      968.2127685546875,
+      2.0
+    ],
+    [
+      958.6923828125,
+      498.6174621582031
+    ],
+    [
+      409.32489013671875,
+      485.3463439941406
+    ]
+  ],
+  "search_polygon": [
+    [
+      493.05487060546875,
+      339.03106689453125
+    ],
+    [
+      631.1538696289062,
+      339.99041748046875
+    ],
+    [
+      629.6500244140625,
+      476.7165832519531
+    ],
+    [
+      491.9901428222656,
+      473.6105041503906
+    ]
+  ],
+  "plate_corners": [
+    [
+      519.0376586914062,
+      366.9148254394531
+    ],
+    [
+      601.7860717773438,
+      370.97979736328125
+    ],
+    [
+      596.6998901367188,
+      449.2199401855469
+    ],
+    [
+      517.3111572265625,
+      446.6111145019531
+    ]
+  ],
+  "notes": "Historical view, visually reviewed against raw image; projected anchor/search and measured plate from accepted original-template detection. Original quality thresholds retained.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": "middle_black_knob_20260922_161619_873692_panel_layout.json",
+  "source_image_sha256": "e93224744488ff8c373d0fd6e031fbba48430aed05457bb84a307ffe983ea092"
+}

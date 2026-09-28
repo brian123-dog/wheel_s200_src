@@ -1,0 +1,6 @@
+{
+  "camera_topic": "/camera_dcw2/color/image_raw",
+  "qr_data": "{\"position\":[{\"name\":\"lower_left_red_button\",\"position\":{\"x\":-0.3308,\"y\":-0.0042,\"z\":0.5783},\"orientation\":{\"x\":0.0096,\"y\":-0.7286,\"z\":0.0076,\"w\":0.6848}},{\"name\":\"middle_black_knob\",\"position\":{\"x\":-0.3308,\"y\":-0.0042,\"z\":0.6772},\"orientation\":{\"x\":0.0096,\"y\":-0.7286,\"z\":0.0076,\"w\":0.6849}},{\"name\":\"rightmost_green_rocker\",\"position\":{\"x\":-0.3308,\"y\":-0.0712,\"z\":0.6772},\"orientation\":{\"x\":0.0096,\"y\":-0.7286,\"z\":0.0076,\"w\":0.6849}},{\"name\":\"upper_meters\",\"position\":{\"x\":-0.3308,\"y\":0.0437,\"z\":0.6262},\"orientation\":{\"x\":0.0096,\"y\":-0.7286,\"z\":0.0076,\"w\":0.6849}}],\"point_id\":\"qr_data\"}",
+  "saved_file": "/home/sunrise/wheel_S200_src/src/qr_detector/qr_results/qr_20260526_183435_424.json",
+  "timestamp": "20260526_183435_424"
+}

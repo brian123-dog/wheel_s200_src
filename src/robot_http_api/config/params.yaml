@@ -1,0 +1,10 @@
+robot_http_api:
+  ros__parameters:
+    robot_id: "R001"
+    http_host: "0.0.0.0"
+    http_port: 9099
+    nav2_action_name: "/navigate_to_pose"
+    inspection_trigger_topic: "/inspection/start_cmd"
+    waypoints_file: ""
+    tasks_file: ""
+    robot_data_hz: 10.0

@@ -1,0 +1,78 @@
+{
+  "reference_image": "reference_1417.png",
+  "target_id": "upper_row_right_black_knob",
+  "anchor_polygon": [
+    [
+      35,
+      175
+    ],
+    [
+      770,
+      175
+    ],
+    [
+      770,
+      488
+    ],
+    [
+      35,
+      488
+    ]
+  ],
+  "search_polygon": [
+    [
+      595,
+      400
+    ],
+    [
+      678,
+      400
+    ],
+    [
+      678,
+      493
+    ],
+    [
+      595,
+      493
+    ]
+  ],
+  "notes": "Raw fifth frame of 20260924_141735 failed task; visually complete upper-row target. First four task frames held out. Nominal body geometry measured from this view; quality gates unchanged.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": null,
+  "source_image_sha256": "701214c0828824e93066e23d19e8a83e08da3c95c1fd319ad56ca63fd9bf9a22",
+  "local_geometry": "round_knob",
+  "axis_center_reference_px": [
+    637,
+    442
+  ],
+  "body_radius_reference_px": 26,
+  "source_image": "/home/sunrise/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_141734_701177_failed_color.png",
+  "anchor_exclusion_polygons": [
+    [
+      [
+        200,
+        215
+      ],
+      [
+        355,
+        215
+      ],
+      [
+        355,
+        330
+      ],
+      [
+        200,
+        330
+      ]
+    ]
+  ],
+  "body_threshold_scale": 0.8
+}

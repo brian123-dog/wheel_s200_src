@@ -1,0 +1,77 @@
+{
+  "reference_image": "reference.png",
+  "target_id": "upper_row_right_black_knob",
+  "anchor_polygon": [
+    [
+      35,
+      175
+    ],
+    [
+      770,
+      175
+    ],
+    [
+      770,
+      488
+    ],
+    [
+      35,
+      488
+    ]
+  ],
+  "search_polygon": [
+    [
+      595,
+      400
+    ],
+    [
+      678,
+      400
+    ],
+    [
+      678,
+      493
+    ],
+    [
+      595,
+      493
+    ]
+  ],
+  "notes": "Near-contact reference at existing fast approach endpoint. Anchor evidence is on visible switches and pushbuttons, not the out-of-view upper meters. Gripper and lower row excluded. Only used in precontact_centering; previous four frames held out for replay.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": null,
+  "source_image_sha256": "34cb2d9cf2db1e7937b3ceb9d26a13d4ff69969b9b9d997936fa1cff9e700d67",
+  "local_geometry": "round_knob",
+  "axis_center_reference_px": [
+    637,
+    441
+  ],
+  "body_radius_reference_px": 24.0,
+  "source_image": "/home/sunrise/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_125537_466993_failed_color.png",
+  "anchor_exclusion_polygons": [
+    [
+      [
+        225,
+        225
+      ],
+      [
+        302,
+        225
+      ],
+      [
+        302,
+        318
+      ],
+      [
+        225,
+        318
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,1597 @@
+# S100 API 使用文档
+
+## 概述
+
+S100 系列机器人通过 `robot_http_api` 包提供 REST API 和 WebSocket 接口。所有接口统一运行在 FastAPI 上，支持自动交互文档（Swagger UI），方便外部客户端（手机 App、Web 前端、PC 程序）控制机器人导航、巡检、任务管理。
+
+## 基本信息
+
+- API 服务地址示例：`http://<host>:9099`
+- 例如：`http://192.168.12.1:9099`
+- 请求格式：除 WebSocket 和 GET 请求外，全部使用 JSON。
+- 请求头：`Content-Type: application/json`
+- 当前接口没有后端鉴权。
+- 浏览器可直接访问 `http://<host>:9099/docs` 进入 Swagger 交互文档，在线测试所有接口。
+
+## 通用响应
+
+所有 HTTP 接口返回统一信封：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": { ... }
+}
+```
+
+- `code`：0 表示成功，非 0 表示错误（HTTP 状态码与 code 一致）
+- `message`：人类可读的描述信息
+- `data`：具体业务数据（可为 null）
+
+任务管理接口参照 NETX2 格式：
+
+```json
+{
+  "ok": true,
+  "message": "created"
+}
+```
+
+库位接口参照 NETX2 格式：
+
+```json
+{
+  "success": true,
+  "message": "ok"
+}
+```
+
+## 任务状态
+
+任务状态字段为 `status`，常见值：
+
+- `CREATED`：已创建，尚未开始
+- `PENDING`：已加入执行队列
+- `RUNNING`：执行中
+- `SUCCEEDED`：成功
+- `FAILED`：失败
+- `CANCELED`：已取消
+- `PAUSED`：暂停
+
+注意：创建任务后不会自动开始。客户端需要再调用运行接口。
+
+---
+
+## 1. 机器人控制
+
+### 1.1 获取机器人状态
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/robot/status
+- 说明：返回当前位姿、电池、任务状态等快照数据。
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "robot_pose": {
+      "x": 0.5,
+      "y": 1.2,
+      "yaw": 1.57
+    },
+    "battery": 27.2,
+    "task_status": "idle",
+    "current_task_id": null
+  }
+}
+```
+
+- `robot_pose`：AMCL 定位位姿，若 AMCL 未启动则为 null
+- `battery`：电池电压，若电池话题未发布则为 null
+- `task_status`：idle / nav_running / inspection_running / succeeded / failed
+- `current_task_id`：当前任务 ID，无任务时为 null
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/robot/status
+```
+
+---
+
+### 1.2 单点导航
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/robot/navigate
+- 说明：发送机器人到指定坐标。
+
+请求体：
+
+```json
+{
+  "x": 1.0,
+  "y": 2.0,
+  "yaw": 0.0,
+  "frame_id": "map",
+  "precision_xy": 0.05,
+  "precision_yaw": 0.05
+}
+```
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| x | float | 是 | - | 目标位置 X（米） |
+| y | float | 是 | - | 目标位置 Y（米） |
+| yaw | float | 否 | 0.0 | 目标朝向（弧度） |
+| frame_id | string | 否 | "map" | 坐标系 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "task_id": "NAV_001",
+    "status": "navigating"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"x":1.0,"y":2.0,"yaw":0.0}' \
+  http://192.168.12.1:9099/api/robot/navigate
+```
+
+---
+
+### 1.3 取消导航/巡检
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/robot/cancel
+- 说明：取消当前正在执行的导航或巡检任务。
+
+请求体：
+
+```json
+{
+  "task_id": null
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| task_id | string | 否 | 指定取消的任务 ID，null 则取消当前活跃任务 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "message": "cancelled"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/robot/cancel
+```
+
+---
+
+### 1.4 启动巡检
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/robot/inspection/start
+- 说明：启动自主巡检任务。巡检节点 `inspection_master` 收到信号后按配置的路径点顺序执行导航+任务。
+
+请求体：
+
+```json
+{
+  "waypoints_file": null,
+  "mission_id": null
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| waypoints_file | string | 否 | 指定路径点 JSON 文件路径，null 使用默认 |
+| mission_id | string | 否 | 任务批次号，null 自动生成 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "task_id": "INS_001",
+    "status": "started"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/robot/inspection/start
+```
+
+---
+
+### 1.5 停止巡检
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/robot/inspection/stop
+- 说明：停止正在执行的巡检任务。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "message": "inspection stopped"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/robot/inspection/stop
+```
+
+---
+
+### 1.6 确认任务状态
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/robot/confirm_status
+- 说明：在 succeeded/failed/canceled 状态下调用，将任务状态重置为 idle。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "message": "status confirmed",
+    "task_status": "idle"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/robot/confirm_status
+```
+
+---
+
+## 2. WebSocket 实时数据推送
+
+### 2.1 机器人状态推送
+
+- 协议：WebSocket
+- 地址：ws://<api base url>:9099/ws/robot_data
+- 频率：10Hz（服务器→客户端）
+- 说明：持续推送机器人实时状态，客户端连接后无需轮询。
+
+数据返回样本：
+
+```json
+{
+  "pose": {
+    "x": 0.5,
+    "y": 1.2,
+    "yaw": 1.57
+  },
+  "battery": 27.2,
+  "fsm": "idle",
+  "current_task_id": null,
+  "path": null
+}
+```
+
+FSM 状态：
+- idle：空闲
+- nav_running：导航中
+- inspection_running：巡检中
+- succeeded：已成功
+- failed：已失败
+- canceled：已取消
+
+Python WebSocket 客户端：
+
+```python
+import asyncio
+import websockets
+
+async def connect_to_robot_data():
+    uri = "ws://192.168.12.1:9099/ws/robot_data"
+    try:
+        async with websockets.connect(uri) as websocket:
+            print("Connected to WebSocket server")
+            while True:
+                message = await websocket.recv()
+                print(f"Received message: {message}")
+    except websockets.exceptions.ConnectionClosed as e:
+        print(f"Connection closed: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    asyncio.run(connect_to_robot_data())
+```
+
+JavaScript WebSocket 客户端：
+
+```javascript
+const ws = new WebSocket("ws://192.168.12.1:9099/ws/robot_data");
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log("pose:", data.pose, "battery:", data.battery, "fsm:", data.fsm);
+};
+ws.onclose = () => console.log("disconnected");
+```
+
+---
+
+### 2.2 全局路径推送
+
+- 协议：WebSocket
+- 地址：ws://<api base url>:9099/ws/path_plan
+- 频率：1Hz（服务器→客户端）
+- 说明：推送当前 Nav2 规划的全局路径（一系列坐标点）。
+
+数据返回样本：
+
+```json
+{
+  "path": [
+    {"x": 0.0, "y": 0.0},
+    {"x": 0.5, "y": 1.0},
+    {"x": 1.0, "y": 2.0}
+  ]
+}
+```
+
+---
+
+### 2.3 速度遥操作
+
+- 协议：WebSocket
+- 地址：ws://<api base url>:9099/ws/velocity_control
+- 频率：10-20Hz（客户端→服务器）
+- 说明：客户端发送速度指令，机器人执行。断开连接自动停车。
+
+发送数据（客户端→服务器）：
+
+```json
+{
+  "linear": 0.2,
+  "angular": 0.1
+}
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| linear | float | 线速度（m/s），正=前进，负=后退 |
+| angular | float | 角速度（rad/s），正=左转，负=右转 |
+
+JavaScript 客户端：
+
+```javascript
+const ws = new WebSocket("ws://192.168.12.1:9099/ws/velocity_control");
+ws.onopen = () => {
+    ws.send('{"linear": 0.2, "angular": 0.0}');  // 前进
+    ws.send('{"linear": 0.0, "angular": 0.5}');  // 左转
+    ws.send('{"linear": 0.0, "angular": 0.0}');  // 停止
+};
+ws.onclose = () => console.log("disconnected, auto stop");
+```
+
+---
+
+### 2.4 任务事件推送
+
+- 协议：WebSocket
+- 地址：ws://<api base url>:9099/ws/task_events
+- 频率：状态变化时推送（0.5Hz 轮询检测）
+- 说明：任务状态发生变化时推送给客户端，避免轮询任务列表。
+
+数据返回样本：
+
+```json
+{
+  "task_status": "RUNNING",
+  "current_task_id": "NAV_001"
+}
+```
+
+---
+
+## 3. 任务管理
+
+### 3.1 获取任务列表
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/tasks
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "message": "cached",
+  "tasks": [
+    {
+      "task_id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "巡检任务1",
+      "type": "inspection",
+      "robot_name": "R001",
+      "fleet_name": "default",
+      "status": "CREATED",
+      "waypoints": [],
+      "created_at_unix_ms": 1778995159000,
+      "updated_at_unix_ms": 1778995159000
+    }
+  ]
+}
+```
+
+任务类型：
+- `navigation`：纯导航任务
+- `inspection`：巡检任务（导航+任务执行）
+- `charger`：去充电任务
+- `dropoff`：投放任务
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/tasks
+```
+
+---
+
+### 3.2 获取任务详情
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/tasks/<task_id>
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "message": "ok",
+  "task": {
+    "task_id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "巡检任务1",
+    "type": "inspection",
+    "robot_name": "R001",
+    "status": "RUNNING",
+    "created_at_unix_ms": 1778995159000,
+    "updated_at_unix_ms": 1778995169000
+  },
+  "unit_tasks": []
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/tasks/550e8400-e29b-41d4-a716-446655440000
+```
+
+---
+
+### 3.3 创建任务
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/tasks
+- 说明：创建任务后状态为 CREATED，需调用 run 接口开始执行。
+
+请求体：
+
+```json
+{
+  "name": "巡检任务1",
+  "type": "inspection",
+  "waypoints": null,
+  "robot_name": "R001",
+  "fleet_name": "default"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| name | string | 是 | 任务名称 |
+| type | string | 是 | navigation / inspection / charger / dropoff |
+| waypoints | array | 否 | 路径点列表 [{x, y, yaw}] |
+| robot_name | string | 否 | 机器人名称，默认 "R001" |
+| fleet_name | string | 否 | 车队名称，默认 "default" |
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "message": "created",
+  "task": {
+    "task_id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "巡检任务1",
+    "type": "inspection",
+    "status": "CREATED",
+    ...
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"name":"巡检任务1","type":"inspection"}' \
+  http://192.168.12.1:9099/api/tasks
+```
+
+---
+
+### 3.4 运行任务
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/tasks/<task_id>/run
+- 说明：将 CREATED 状态的任务加入执行队列。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "message": "queued"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/tasks/550e8400-e29b-41d4-a716-446655440000/run
+```
+
+---
+
+### 3.5 取消任务
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/tasks/<task_id>/cancel
+- 说明：取消正在执行的任务，同时向 ROS2 侧转发取消信号。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "message": "cancelled"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/tasks/550e8400-e29b-41d4-a716-446655440000/cancel
+```
+
+---
+
+### 3.6 删除任务
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/tasks/<task_id>/delete
+- 说明：从注册表中删除任务。建议只删除终态（SUCCEEDED/FAILED/CANCELED）任务。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "message": "deleted"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/tasks/550e8400-e29b-41d4-a716-446655440000/delete
+```
+
+---
+
+## 4. 路径点管理
+
+### 4.1 获取路径点列表
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/waypoints
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "waypoints": [
+      {
+        "point_id": "w1abc",
+        "x": 1.0,
+        "y": 2.0,
+        "yaw": 0.0,
+        "execute_tasks": false,
+        "tasks": [],
+        "wait_time": 10.0
+      }
+    ]
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/waypoints
+```
+
+---
+
+### 4.2 新增路径点
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/waypoints
+- 说明：支持单条或批量新增。point_id 不传则自动生成。
+
+请求体：
+
+```json
+{
+  "waypoints": [
+    {
+      "x": 1.0,
+      "y": 2.0,
+      "yaw": 0.0,
+      "execute_tasks": false,
+      "wait_time": 10.0
+    },
+    {
+      "x": 3.0,
+      "y": 4.0,
+      "yaw": 1.57,
+      "execute_tasks": true
+    }
+  ]
+}
+```
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| x | float | 是 | - | 路径点 X 坐标 |
+| y | float | 是 | - | 路径点 Y 坐标 |
+| yaw | float | 否 | 0.0 | 朝向（弧度） |
+| execute_tasks | bool | 否 | false | 到达后是否执行任务 |
+| wait_time | float | 否 | 10.0 | 到达后等待时间（秒） |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "created",
+  "data": {"count": 2}
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"waypoints":[{"x":1.0,"y":2.0,"yaw":0.0,"execute_tasks":false}]}' \
+  http://192.168.12.1:9099/api/waypoints
+```
+
+---
+
+### 4.3 修改路径点
+
+- 协议：HTTP PUT
+- 地址：http://<api base url>:9099/api/waypoints/<point_id>
+- 说明：只传需要修改的字段，未传字段保持不变。
+
+请求体：
+
+```json
+{
+  "execute_tasks": true,
+  "wait_time": 15.0
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| x | float | 否 | 新的 X 坐标 |
+| y | float | 否 | 新的 Y 坐标 |
+| yaw | float | 否 | 新的朝向 |
+| execute_tasks | bool | 否 | 是否执行任务 |
+| wait_time | float | 否 | 等待时间 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "updated",
+  "data": {
+    "point_id": "w1abc",
+    "x": 1.0,
+    "y": 2.0,
+    "execute_tasks": true,
+    ...
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X PUT \
+  -H "Content-Type: application/json" \
+  -d '{"execute_tasks": true}' \
+  http://192.168.12.1:9099/api/waypoints/w1abc
+```
+
+---
+
+### 4.4 删除路径点
+
+- 协议：HTTP DELETE
+- 地址：http://<api base url>:9099/api/waypoints/<point_id>
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "deleted"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X DELETE http://192.168.12.1:9099/api/waypoints/w1abc
+```
+
+---
+
+### 4.5 记录当前位置
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/waypoints/save_current
+- 说明：调用 C++ `position_recorder` 节点的 `/save_position` 服务，将当前 AMCL 位姿记录为路径点。
+
+请求体：
+
+```json
+{
+  "point_id": null,
+  "execute_tasks": false
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| point_id | string | 否 | 路径点 ID，null 自动生成 |
+| execute_tasks | bool | 否 | 是否执行任务 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "saved",
+  "data": {
+    "success": true,
+    "message": "position saved"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"execute_tasks": true}' \
+  http://192.168.12.1:9099/api/waypoints/save_current
+```
+
+---
+
+## 5. 机械臂控制
+
+### 5.1 旋转末端执行器
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/arm/rotate
+- 说明：旋转机械臂末端执行器指定角度。
+
+请求体：
+
+```json
+{
+  "degrees": 30.0
+}
+```
+
+| 字段 | 类型 | 必填 | 范围 | 说明 |
+|---|---|---|---|---|
+| degrees | float | 否 | -180 ~ 180 | 旋转角度（度），默认 10.0 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "status": "started",
+    "waypoint_index": 30
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"degrees":45.0}' \
+  http://192.168.12.1:9099/api/arm/rotate
+```
+
+---
+
+### 5.2 执行机械臂任务流水线
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/arm/execute_task
+- 说明：触发机械臂完整任务流水线（10 个阶段：预抓取→靠近→抓取→提升→转移→倾倒→返回→放置→退回→完成）。
+
+请求体：
+
+```json
+{
+  "waypoint_index": 0,
+  "run_full_task": false
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| waypoint_index | int | 否 | 路径点索引，默认 0 |
+| run_full_task | bool | 否 | 执行完整流水线，默认 false（简化旋转） |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "status": "started",
+    "waypoint_index": 0
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"waypoint_index":0,"run_full_task":true}' \
+  http://192.168.12.1:9099/api/arm/execute_task
+```
+
+---
+
+### 5.3 停止机械臂
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/arm/stop
+- 说明：取消正在执行的机械臂 Action。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "message": "arm task cancelled"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/arm/stop
+```
+
+---
+
+## 6. 地图管理
+
+### 6.1 获取地图列表
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/maps
+- 说明：扫描地图目录中的 .yaml 文件。
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "maps": [
+      {"name": "floor1", "path": "/home/sunrise/wheel_S200_src/maps/floor1.yaml"}
+    ]
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/maps
+```
+
+---
+
+### 6.2 保存地图
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/maps/save
+- 说明：调用 Nav2 map_saver 服务保存当前地图。
+
+请求体：
+
+```json
+{
+  "name": "floor1"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| name | string | 是 | 地图名称 |
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "name": "floor1",
+    "message": "saved"
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"name":"floor1"}' \
+  http://192.168.12.1:9099/api/maps/save
+```
+
+---
+
+### 6.3 删除地图
+
+- 协议：HTTP DELETE
+- 地址：http://<api base url>:9099/api/maps/<map_name>
+- 说明：删除 .yaml 和 .pgm 文件。
+
+curl 示例：
+
+```bash
+curl -sS -X DELETE http://192.168.12.1:9099/api/maps/floor1
+```
+
+---
+
+### 6.4 切换地图
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/maps/change
+- 说明：切换地图需要重启 Nav2（带新 map 参数），通过 ros2 launch 操作。
+
+注意：此接口当前返回 501，地图切换请通过 SSH 或 launch 文件操作。
+
+---
+
+## 7. 库位管理
+
+库位管理参照 NETX2 `/api/storage` 设计。数据持久化在 JSON 文件中。
+
+Cell ID 规则：
+
+```text
+area_{area}_shelf_{shelf}_column_{column}_row_{row}
+```
+
+所有索引从 `1` 开始。
+
+### 7.1 获取库位状态
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/storage
+
+响应示例：
+
+```json
+{
+  "success": true,
+  "message": "ok",
+  "layout": [
+    {
+      "area_index": 1,
+      "shelves": [
+        {
+          "shelf_index": 1,
+          "columns": 7,
+          "rows": 5,
+          "shelf_side": "left"
+        },
+        {
+          "shelf_index": 2,
+          "columns": 7,
+          "rows": 5,
+          "shelf_side": "right"
+        }
+      ]
+    }
+  ],
+  "cells": {
+    "area_1_shelf_1_column_1_row_1": {
+      "enabled": true,
+      "stock": 0
+    }
+  },
+  "summary": {
+    "total": 70,
+    "disabled": 0,
+    "with_stock": 0
+  },
+  "timestamp": 1778995169.5
+}
+```
+
+字段说明：
+- `enabled=true`：cell 可用
+- `enabled=false`：cell 禁用
+- `stock=0`：空
+- `stock>0`：有库存
+- `shelf_side`：货架在走廊左侧或右侧，值为 `left` / `right`
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/storage
+```
+
+---
+
+### 7.2 设置库存
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/storage/set_stock
+
+单个 cell：
+
+```json
+{
+  "cell_id": "area_1_shelf_1_column_1_row_1",
+  "stock": 1
+}
+```
+
+批量 cell：
+
+```json
+{
+  "cell_ids": [
+    "area_1_shelf_1_column_1_row_1",
+    "area_1_shelf_1_column_1_row_2"
+  ],
+  "stock": 1
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| cell_id | string | 否（或用 cell_ids） | 单个 cell ID |
+| cell_ids | array | 否（或用 cell_id） | 批量 cell ID 列表 |
+| stock | int | 是 | 库存数量，必须 >=0 |
+
+规则：
+- `stock` 必须大于等于 `0`
+- 批量设置时，禁用 cell 会被跳过
+
+响应示例：
+
+```json
+{
+  "success": true,
+  "message": "updated 2 cells"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"cell_id":"area_1_shelf_1_column_1_row_1","stock":1}' \
+  http://192.168.12.1:9099/api/storage/set_stock
+```
+
+---
+
+### 7.3 启用或禁用库位
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/storage/enable
+
+单个 cell：
+
+```json
+{
+  "cell_id": "area_1_shelf_1_column_1_row_1",
+  "enable": false
+}
+```
+
+批量 cell：
+
+```json
+{
+  "cell_ids": [
+    "area_1_shelf_1_column_1_row_1",
+    "area_1_shelf_1_column_1_row_2"
+  ],
+  "enable": true
+}
+```
+
+禁用后该 cell 不会被 feeding 任务选择。
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"cell_id":"area_1_shelf_1_column_1_row_1","enable":false}' \
+  http://192.168.12.1:9099/api/storage/enable
+```
+
+---
+
+### 7.4 读取初始化布局
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/storage/init_yaml
+
+响应示例：
+
+```json
+{
+  "success": true,
+  "message": "ok",
+  "layout": [
+    {
+      "area_index": 1,
+      "shelves": [
+        {"shelf_index": 1, "columns": 7, "rows": 5, "shelf_side": "left"},
+        {"shelf_index": 2, "columns": 7, "rows": 5, "shelf_side": "right"}
+      ]
+    }
+  ],
+  "content": "[{\"area_index\":1,...}]"
+}
+```
+
+- `layout`：结构化布局数据，推荐客户端使用此字段做表单编辑
+- `content`：JSON 文本，供参考
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/storage/init_yaml
+```
+
+---
+
+### 7.5 保存初始化布局
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/storage/init_yaml
+- 说明：保存布局配置，但不会立刻重建库位。
+
+请求体：
+
+```json
+{
+  "layout": [
+    {
+      "area_index": 1,
+      "shelves": [
+        {"columns": 7, "rows": 5, "shelf_side": "left"},
+        {"columns": 7, "rows": 5, "shelf_side": "right"}
+      ]
+    }
+  ]
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"layout":[{"area_index":1,"shelves":[{"columns":7,"rows":5,"shelf_side":"left"},{"columns":7,"rows":5,"shelf_side":"right"}]}]}' \
+  http://192.168.12.1:9099/api/storage/init_yaml
+```
+
+---
+
+### 7.6 重建库位
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/storage/reinit
+- 说明：按当前布局重建所有 cell，重置库存状态。客户端调用前建议弹出确认框。
+
+请求体：`{}`
+
+响应示例：
+
+```json
+{
+  "success": true,
+  "message": "reinitialized 70 cells"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/storage/reinit
+```
+
+---
+
+## 8. 定时任务
+
+### 8.1 获取定时任务列表
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/schedules
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "schedules": [
+      {
+        "schedule_id": "550e8400-e29b-41d4-a716-446655440000",
+        "task_id": "task-uuid",
+        "trigger_type": "CRON",
+        "cron_expr": "0 8 * * *",
+        "timezone": "Asia/Shanghai",
+        "enabled": true
+      }
+    ]
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/schedules
+```
+
+---
+
+### 8.2 创建定时任务
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/schedules
+
+请求体：
+
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "trigger_type": "CRON",
+  "cron_expr": "0 8 * * *",
+  "timezone": "Asia/Shanghai",
+  "enabled": true
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| task_id | string | 是 | 关联的任务 ID |
+| trigger_type | string | 否 | 触发类型，默认 "CRON" |
+| cron_expr | string | 否 | Cron 表达式，默认 "0 8 * * *"（每天早 8 点） |
+| timezone | string | 否 | 时区，默认 "Asia/Shanghai" |
+| enabled | bool | 否 | 是否启用，默认 true |
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"task_id":"550e8400-e29b-41d4-a716-446655440000","cron_expr":"0 8 * * *"}' \
+  http://192.168.12.1:9099/api/schedules
+```
+
+---
+
+### 8.3 更新定时任务
+
+- 协议：HTTP PUT
+- 地址：http://<api base url>:9099/api/schedules/<schedule_id>
+- 说明：只传需要修改的字段。
+
+请求体：
+
+```json
+{
+  "enabled": false,
+  "cron_expr": "0 20 * * *"
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS -X PUT \
+  -H "Content-Type: application/json" \
+  -d '{"enabled":false}' \
+  http://192.168.12.1:9099/api/schedules/550e8400-e29b-41d4-a716-446655440000
+```
+
+---
+
+### 8.4 删除定时任务
+
+- 协议：HTTP DELETE
+- 地址：http://<api base url>:9099/api/schedules/<schedule_id>
+
+curl 示例：
+
+```bash
+curl -sS -X DELETE http://192.168.12.1:9099/api/schedules/550e8400-e29b-41d4-a716-446655440000
+```
+
+---
+
+## 9. 系统控制
+
+### 9.1 获取系统信息
+
+- 协议：HTTP GET
+- 地址：http://<api base url>:9099/api/system/info
+
+响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "hostname": "wheeltec-robot",
+    "platform": "Linux-5.15.0-arm64",
+    "ros_domain_id": "0",
+    "task_status": "idle",
+    "current_task_id": null
+  }
+}
+```
+
+curl 示例：
+
+```bash
+curl -sS http://192.168.12.1:9099/api/system/info
+```
+
+---
+
+### 9.2 关机
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/system/poweroff
+- 说明：执行 sudo shutdown，需确保当前用户有 sudo 免密权限。
+
+请求体：`{}`
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  http://192.168.12.1:9099/api/system/poweroff
+```
+
+---
+
+### 9.3 设置最大速度
+
+- 协议：HTTP POST
+- 地址：http://<api base url>:9099/api/system/set_max_speed
+- 说明：动态修改 Nav2 控制器最大速度（调用 ros2 param set）。
+
+请求体：
+
+```json
+{
+  "max_speed": 1.0,
+  "max_reverse_speed": 0.5
+}
+```
+
+| 字段 | 类型 | 必填 | 范围 | 说明 |
+|---|---|---|---|---|
+| max_speed | float | 是 | 0~5 | 最大线速度（m/s） |
+| max_reverse_speed | float | 否 | 0~5 | 最大后退速度（m/s），默认 0.5 |
+
+curl 示例：
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"max_speed":1.0}' \
+  http://192.168.12.1:9099/api/system/set_max_speed
+```
+
+---
+
+## 10. 客户端建议流程
+
+1. 打开页面时调用 `GET /api/robot/status` 获取初始状态。
+2. 建立 WebSocket 连接 `ws://<host>:9099/ws/robot_data` 接收实时推送（10Hz）。
+3. 需要导航时调用 `POST /api/robot/navigate`，通过 `WS /ws/robot_data` 观察 fsm 变化。
+4. 需要巡检时调用 `POST /api/tasks` 创建任务 → `POST /api/tasks/{id}/run` 执行。
+5. 每 1~3 秒轮询或通过 `WS /ws/task_events` 获取任务状态变更。
+6. 路径点页面每 1~3 秒轮询 `GET /api/waypoints`。
+7. 库位页面每 1~3 秒轮询 `GET /api/storage`。
+8. `WS /ws/velocity_control` 用于遥操作时，需在 UI 上做安全确认（断开自动停车）。
+
+---
+
+## 11. 接口完整清单
+
+| # | 协议 | 方法 | 路径 | 说明 |
+|---|---|---|---|---|
+| 1 | HTTP | GET | `/api/robot/status` | 机器人状态 |
+| 2 | HTTP | POST | `/api/robot/navigate` | 单点导航 |
+| 3 | HTTP | POST | `/api/robot/cancel` | 取消导航/巡检 |
+| 4 | HTTP | POST | `/api/robot/inspection/start` | 启动巡检 |
+| 5 | HTTP | POST | `/api/robot/inspection/stop` | 停止巡检 |
+| 6 | HTTP | POST | `/api/robot/confirm_status` | 确认终态 |
+| 7 | WS | - | `/ws/robot_data` | 10Hz 状态推送 |
+| 8 | WS | - | `/ws/path_plan` | 1Hz 路径推送 |
+| 9 | WS | - | `/ws/velocity_control` | 双向速度控制 |
+| 10 | WS | - | `/ws/task_events` | 任务事件推送 |
+| 11 | HTTP | GET | `/api/tasks` | 任务列表 |
+| 12 | HTTP | GET | `/api/tasks/{id}` | 任务详情 |
+| 13 | HTTP | POST | `/api/tasks` | 创建任务 |
+| 14 | HTTP | POST | `/api/tasks/{id}/run` | 执行任务 |
+| 15 | HTTP | POST | `/api/tasks/{id}/cancel` | 取消任务 |
+| 16 | HTTP | POST | `/api/tasks/{id}/delete` | 删除任务 |
+| 17 | HTTP | GET | `/api/waypoints` | 路径点列表 |
+| 18 | HTTP | POST | `/api/waypoints` | 新增路径点 |
+| 19 | HTTP | PUT | `/api/waypoints/{id}` | 修改路径点 |
+| 20 | HTTP | DELETE | `/api/waypoints/{id}` | 删除路径点 |
+| 21 | HTTP | POST | `/api/waypoints/save_current` | 记录当前位置 |
+| 22 | HTTP | POST | `/api/arm/rotate` | 旋转末端 |
+| 23 | HTTP | POST | `/api/arm/execute_task` | 机械臂任务 |
+| 24 | HTTP | POST | `/api/arm/stop` | 停止机械臂 |
+| 25 | HTTP | GET | `/api/maps` | 地图列表 |
+| 26 | HTTP | POST | `/api/maps/save` | 保存地图 |
+| 27 | HTTP | DELETE | `/api/maps/{name}` | 删除地图 |
+| 28 | HTTP | POST | `/api/maps/change` | 切换地图 |
+| 29 | HTTP | GET | `/api/storage` | 库位状态 |
+| 30 | HTTP | POST | `/api/storage/set_stock` | 设置库存 |
+| 31 | HTTP | POST | `/api/storage/enable` | 启用/禁用库位 |
+| 32 | HTTP | GET | `/api/storage/init_yaml` | 读取布局 |
+| 33 | HTTP | POST | `/api/storage/init_yaml` | 保存布局 |
+| 34 | HTTP | POST | `/api/storage/reinit` | 重建库位 |
+| 35 | HTTP | GET | `/api/schedules` | 定时任务列表 |
+| 36 | HTTP | POST | `/api/schedules` | 创建定时任务 |
+| 37 | HTTP | PUT | `/api/schedules/{id}` | 修改定时任务 |
+| 38 | HTTP | DELETE | `/api/schedules/{id}` | 删除定时任务 |
+| 39 | HTTP | GET | `/api/system/info` | 系统信息 |
+| 40 | HTTP | POST | `/api/system/poweroff` | 关机 |
+| 41 | HTTP | POST | `/api/system/set_max_speed` | 设置最大速度 |
+

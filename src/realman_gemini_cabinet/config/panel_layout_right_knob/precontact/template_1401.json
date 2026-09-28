@@ -1,0 +1,77 @@
+{
+  "reference_image": "reference_1401.png",
+  "target_id": "upper_row_right_black_knob",
+  "anchor_polygon": [
+    [
+      35,
+      175
+    ],
+    [
+      770,
+      175
+    ],
+    [
+      770,
+      488
+    ],
+    [
+      35,
+      488
+    ]
+  ],
+  "search_polygon": [
+    [
+      595,
+      400
+    ],
+    [
+      678,
+      400
+    ],
+    [
+      678,
+      493
+    ],
+    [
+      595,
+      493
+    ]
+  ],
+  "notes": "Additional precontact view from accepted fifth frame of 20260924_140156 task; first four failed frames held out. Original quality gates unchanged.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": null,
+  "source_image_sha256": "86abbca32faa23b2922242de62f37cdafc7a412af5d8a0dca6215ded388104f8",
+  "local_geometry": "round_knob",
+  "axis_center_reference_px": [
+    636.2,
+    439.5
+  ],
+  "body_radius_reference_px": 26.2,
+  "source_image": "/home/sunrise/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_140156_614007_panel_layout_color.png",
+  "anchor_exclusion_polygons": [
+    [
+      [
+        200,
+        215
+      ],
+      [
+        355,
+        215
+      ],
+      [
+        355,
+        330
+      ],
+      [
+        200,
+        330
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,21 @@
+# AlignToWall.action — 多传感器融合墙面精修 Action
+# Goal: 调用方指定目标距离/角度及容差
+float64 target_distance      # 目标墙面距离 (m), 典型值 0.30
+float64 target_yaw           # 目标偏航角 (rad), 典型值 0.0 (正对墙面)
+float64 tolerance_distance   # 距离容差 (m), 典型值 0.02
+float64 tolerance_yaw        # 角度容差 (rad), 典型值 0.017 (~1°)
+string laser_frame           # 激光雷达坐标系, 如 'laser_link'
+string camera_frame          # 深度相机坐标系, 如 'camera_link'
+---
+# Result: 任务结束时返回
+bool success                  # 是否成功完成精修
+float64 final_distance_error  # 最终距离误差 (m)
+float64 final_yaw_error       # 最终角度误差 (rad)
+string message                # 附加消息
+---
+# Feedback: 运行中持续反馈
+float64 current_distance_error  # 当前距离误差 (m)
+float64 current_yaw_error       # 当前角度误差 (rad)
+float64 lidar_weight            # 激光雷达融合权重 [0,1]
+float64 depth_weight            # 深度相机融合权重 [0,1]
+string state                    # 当前状态: COARSE_ALIGN_YAW / COARSE_ALIGN_DIST / FINE_ALIGN / STABILIZING / FAILED

@@ -1,0 +1,22 @@
+[
+  {
+    "file": "right_knob_near_1417_replay_1.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_141728_836981_panel_layout_color.png",
+    "sha256": "24533d63546a5dc3b5d05dd26314663f2a3b3362616902c2ea845ad092281257"
+  },
+  {
+    "file": "right_knob_near_1417_replay_2.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_141730_235799_failed_color.png",
+    "sha256": "a295d80ec0f1fdb61c282593967183b3032185255ccdf7662c64ab19a24a0826"
+  },
+  {
+    "file": "right_knob_near_1417_replay_3.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_141731_829067_failed_color.png",
+    "sha256": "79c7f6b06d326657856620a132dc793613d47a24901130e616e97cd2220c7e37"
+  },
+  {
+    "file": "right_knob_near_1417_replay_4.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_141733_258969_failed_color.png",
+    "sha256": "2a46e83513ad36f992d816c4efa76789bd48560aa5dd8135bc3ca8b13b6e774f"
+  }
+]

@@ -1,0 +1,53 @@
+<!--
+  This Behavior Tree replans the global path periodically at 1 Hz and it also has
+  recovery actions specific to planning / control as well as general system issues.
+  This will be continuous if a kinematically valid planner is selected.
+  Modified: Added MultiActionNode after each recovery action for logging
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="NavigateThenArmTask">
+      <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+        <PipelineSequence name="NavigateWithReplanning">
+          <RateController hz="1.0">
+            <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </RecoveryNode>
+          </RateController>
+          <RecoveryNode number_of_retries="1" name="FollowPath">
+            <FollowPath path="{path}" controller_id="FollowPath"/>
+            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+          </RecoveryNode>
+        </PipelineSequence>
+        <ReactiveFallback name="RecoveryFallback">
+          <GoalUpdated/>
+          <RoundRobin name="RecoveryActions">
+            <Sequence name="ClearingActions">
+              <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+              <MultiActionNode name="LogClearCostmapRecovery"/>
+            </Sequence>
+            <Sequence name="SpinWithLog">
+            <Spin spin_dist="1.57"/>
+              <MultiActionNode name="LogSpinRecovery"/>
+            </Sequence>
+            <Sequence name="WaitWithLog">
+              <Wait wait_duration="2"/>
+              <MultiActionNode name="LogWaitRecovery"/>
+            </Sequence>
+            <Sequence name="BackUpWithLog">
+              <BackUp backup_dist="0.30" backup_speed="0.05"/>
+              <MultiActionNode name="LogBackUpRecovery"/>
+            </Sequence>
+          </RoundRobin>
+        </ReactiveFallback>
+      </RecoveryNode>
+      <!-- 导航到点后调用机械臂任务，等待完成后返回 success/failure -->
+      <CallNavArmAction
+        name="TriggerArmTask"
+        waypoint_index="{waypoint_index}"
+        server_timeout="1800000"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

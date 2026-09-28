@@ -1,0 +1,59 @@
+<!--
+  This Behavior Tree replans the global path periodically at 1 Hz and it also has
+  recovery actions specific to planning / control as well as general system issues.
+  This will be continuous if a kinematically valid planner is selected.
+  Modified: Added MultiActionNode after each recovery action for logging
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="NavigateThenArmTask">
+      <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+        <PipelineSequence name="NavigateWithReplanning">
+          <RateController hz="1.0">
+            <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </RecoveryNode>
+          </RateController>
+          <RecoveryNode number_of_retries="1" name="FollowPath">
+            <FollowPath path="{path}" controller_id="FollowPath"/>
+            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+          </RecoveryNode>
+        </PipelineSequence>
+        <ReactiveFallback name="RecoveryFallback">
+          <GoalUpdated/>
+          <RoundRobin name="RecoveryActions">
+            <Sequence name="ClearingActions">
+              <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+              <MultiActionNode name="LogClearCostmapRecovery"/>
+            </Sequence>
+            <Sequence name="SpinWithLog">
+            <Spin spin_dist="1.57"/>
+              <MultiActionNode name="LogSpinRecovery"/>
+            </Sequence>
+            <Sequence name="WaitWithLog">
+              <Wait wait_duration="2"/>
+              <MultiActionNode name="LogWaitRecovery"/>
+            </Sequence>
+            <Sequence name="BackUpWithLog">
+              <BackUp backup_dist="0.30" backup_speed="0.05"/>
+              <MultiActionNode name="LogBackUpRecovery"/>
+            </Sequence>
+          </RoundRobin>
+        </ReactiveFallback>
+      </RecoveryNode>
+      
+        <!-- 注意：导航到点后的精修/扫码/机械臂任务已移至 robot_http/inspection_master.py 中统一编排。
+        BT 行为树只负责纯导航+恢复，不再包含 CallAlignToWall。
+        如需恢复旧行为（到点后由 Nav2 自动调用 /align_to_wall 精修），
+        取消下面 CallAlignToWall 标签的注释即可。
+
+        <CallAlignToWall name="RefineWallAlignment" target_distance="0.30" target_yaw="0.0"
+          tolerance_distance="0.02" tolerance_yaw="0.017" laser_frame="laser_link"
+          camera_frame="camera_link" server_timeout="30000"/>
+        -->
+     
+    </Sequence>
+  </BehaviorTree>
+</root>

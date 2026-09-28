@@ -1,0 +1,22 @@
+[
+  {
+    "file": "right_knob_near_1401_holdout_1.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_140152_425888_failed_color.png",
+    "sha256": "22b2f5d85a1b6697816cc51716ea40e6a1ff67aeb0c10964661b36c4c4ec3d3f"
+  },
+  {
+    "file": "right_knob_near_1401_holdout_2.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_140153_195500_failed_color.png",
+    "sha256": "f3055d3ee6c0067ca26df7e42955b5d620024b7754acec0039b29dbd9d04792f"
+  },
+  {
+    "file": "right_knob_near_1401_holdout_3.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_140153_869967_failed_color.png",
+    "sha256": "074fbf44ac0c3a5b1372545e1463113cc379ba5f8dca45b4f3eb51c891c1d439"
+  },
+  {
+    "file": "right_knob_near_1401_holdout_4.png",
+    "source": "/mnt/data/wheel_S200_src/vision_debug/upper_row_right_black_knob_20260924_140154_834779_failed_color.png",
+    "sha256": "79e317961a5a22ac5b4b9305806c67a30f6e9b0862f4b56e92bfe6d2a1800295"
+  }
+]

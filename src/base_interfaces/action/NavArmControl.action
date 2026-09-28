@@ -1,0 +1,12 @@
+int64   waypoint_index 
+
+---
+
+int64 success
+int32 failed_stage
+int32 task_attempt_used
+string message
+
+---
+
+float64 stage_feedback

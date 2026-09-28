@@ -1,0 +1,77 @@
+{
+  "reference_image": "reference_user_front_1.png",
+  "target_id": "upper_row_right_black_knob",
+  "anchor_polygon": [
+    [
+      225,
+      5
+    ],
+    [
+      555,
+      5
+    ],
+    [
+      555,
+      285
+    ],
+    [
+      225,
+      285
+    ]
+  ],
+  "search_polygon": [
+    [
+      482.6,
+      295.6
+    ],
+    [
+      523.4,
+      295.6
+    ],
+    [
+      523.4,
+      341.2
+    ],
+    [
+      482.6,
+      341.2
+    ]
+  ],
+  "notes": "Operator-provided RGB directory, frontal historical view. Overlay marks excluded including SIFT descriptor footprints. Upper row rightmost BLACK body only.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [
+    0.35,
+    0.35
+  ],
+  "max_median_reprojection_px": 2.5,
+  "source_metadata": null,
+  "source_image_sha256": "f94adfee537011475f9045f7695665e7395b99371d3680eea9a05a49245a4562",
+  "local_geometry": "round_knob",
+  "axis_center_reference_px": [
+    503,
+    316
+  ],
+  "body_radius_reference_px": 12,
+  "anchor_exclusion_polygons": [
+    [
+      [
+        215,
+        110
+      ],
+      [
+        430,
+        110
+      ],
+      [
+        430,
+        280
+      ],
+      [
+        215,
+        280
+      ]
+    ]
+  ],
+  "source_image": "/home/sunrise/wheel_S200_src/vision_debug/png/middle_black_knob_20260606_191706_216943_overlay.png"
+}

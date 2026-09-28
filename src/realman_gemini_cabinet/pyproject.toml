@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "realman-gemini-cabinet"
+version = "0.1.0"
+description = "Task-level RealMan + Gemini2 electrical cabinet manipulation scaffold."
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.scripts]
+rg-cabinet-demo = "rg_cabinet.task_runner:main"
+cabinet-task-node = "rg_cabinet_ros2.task_node:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

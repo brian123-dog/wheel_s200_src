@@ -1,0 +1,18 @@
+huangshan_task_api:
+  ros__parameters:
+    # HTTP 服务配置
+    http_host: "0.0.0.0"
+    http_port: 6080
+
+    # 数据持久化文件路径 (空字符串表示使用默认内存模式, 重启后丢失)
+    tasks_file: ""
+    storage_file: ""
+    schedules_file: ""
+    fleets_file: ""
+
+    # 航点配置文件路径 (JSON 格式)
+    # 示例格式: {"position": [{"name": "charger_1", "x": 1.0, "y": 2.0, "yaw": 0.0}]}
+    waypoints_file: ""
+
+    # 导航超时时间 (秒)
+    nav_timeout_sec: 120.0

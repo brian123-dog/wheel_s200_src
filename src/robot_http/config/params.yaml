@@ -1,0 +1,13 @@
+robot_http_gateway:
+  ros__parameters:
+    robot_id: "R001"
+    http_host: "0.0.0.0"
+    http_port: 9099
+    nav2_action_name: "/navigate_to_pose"
+    inspection_trigger_topic: "/inspection/start_cmd"
+
+inspection_master:
+  ros__parameters:
+    web_ip: "192.168.110.100"
+    web_port: 5000
+    qr_timeout_sec: 10

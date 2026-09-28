@@ -1,0 +1,6 @@
+{
+  "camera_topic": "/camera_dcw2/color/image_raw",
+  "qr_data": "{\n  \"factory\": \"一号厂房\",\n  \"point_id\": \"P002\",\n  \"point_name\": \"1号电柜\",\n  \"task_type\": \"meter_inspection\",\n  \"meter_count\": 2,\n  \"meters\": [\n    {\n      \"meter_id\": \"M001\",\n      \"meter_name\": \"电流表\",\n      \"meter_type\": \"ocr_meter\",\n      \"pose\": {\n        \"x\": -0.2,\n        \"y\": 0,\n        \"z\": 0.45,\n        \"yaw\": -10,\n        \"pitch\": 0,\n        \"focus_distance\": 0.45\n      },\n      \"submit_field\": \"电流表数值\"\n    },\n    {\n      \"meter_id\": \"M002\",\n      \"meter_name\": \"压力表\",\n      \"meter_type\": \"pointer_meter\",\n      \"pose\": {\n        \"x\": 0.2,\n        \"y\": 0,\n        \"z\": 0.45,\n        \"yaw\": 10,\n        \"pitch\": 0,\n        \"focus_distance\": 0.45\n      },\n      \"submit_field\": \"压力表数值\"\n    }\n  ]\n}",
+  "saved_file": "/home/sunrise/wheel_S200_src/src/qr_detector/qr_results/qr_20260601_153408_892.json",
+  "timestamp": "20260601_153408_892"
+}

@@ -1,0 +1,93 @@
+# =============================================================================
+# Gemini 2 机械臂相机参数 (SN: CPC85630010)
+# 节点名必须与 launch 中 ComposableNode name 一致
+# =============================================================================
+camera:
+  ros__parameters:
+    # ---- 设备绑定 ----
+    camera_name: "camera_gemini"
+    #serial_number: "AY3B1450038"
+    serial_number: "CPC856300109"
+    device_num: 1
+    vendor_id: "0x2bc5"
+    product_id: "0x0807"
+
+    # ---- 连接 ----
+    connection_delay: 500
+    use_hardware_time: false
+
+    # ---- 彩色（与 PC 端 gemini_330_series.launch 保持一致） ----
+    enable_color: true
+    color_width: 1280
+    color_height: 720
+    color_fps: 10
+    color_format: "MJPG"
+    flip_color: false
+    color_qos: "default"
+    color_camera_info_qos: "default"
+    enable_color_auto_exposure: true
+    enable_color_auto_exposure_priority: false
+    color_exposure: -1
+    color_gain: -1
+    enable_color_auto_white_balance: true
+    color_white_balance: -1
+    color_ae_max_exposure: -1
+    color_brightness: -1
+    color_sharpness: -1
+    color_saturation: -1
+    color_contrast: -1
+    color_gamma: -1
+    color_hue: -1
+
+    # ---- 设备预设（PC 端加载 Default 预设后彩色正常） ----
+    device_preset: "Default"
+
+    # ---- 深度 ----
+    enable_depth: true
+    depth_width: 848
+    depth_height: 480
+    depth_fps: 10
+    depth_format: "Y16"
+    flip_depth: false
+    depth_qos: "default"
+    depth_camera_info_qos: "default"
+    enable_depth_scale: true
+    depth_filter_config: ""
+
+    # ---- 红外（与 PC 端一致开启） ----
+    enable_ir: false
+    ir_width: 640
+    ir_height: 480
+    ir_fps: 15
+    ir_format: "Y8"
+    flip_ir: false
+    ir_qos: "default"
+    ir_camera_info_qos: "default"
+
+    # ---- 点云 ----
+    enable_point_cloud: true
+    enable_colored_point_cloud: false
+    cloud_frame_id: ""
+    point_cloud_qos: "default"
+    ordered_pc: false
+
+    # ---- 深度注册（与 PC 端一致开启） ----
+    depth_registration: true
+    align_mode: "HW"
+
+    # ---- TF ----
+    publish_tf: true
+    tf_publish_rate: 0.0
+    enable_publish_extrinsic: false
+
+    # ---- 滤波 ----
+    enable_soft_filter: true
+    enable_ldp: true
+    soft_filter_max_diff: -1
+    soft_filter_speckle_size: -1
+
+    # ---- 日志与心跳 ----
+    log_level: "none"
+    enable_heartbeat: false
+    laser_energy_level: -1
+    industry_mode: ""

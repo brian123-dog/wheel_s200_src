@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ros2_graph_filter</name>
+  <version>0.1.0</version>
+  <description>
+    一个用于替代 rqt_graph 过滤功能的 ROS2 工具包，
+    通过 YAML 配置文件对节点和话题进行过滤与聚合，
+    生成适合学术论文的 ROS2 节点拓扑图（SVG 矢量图）。
+  </description>
+  <maintainer email="user@example.com">user</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- ROS2 Python 依赖 -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+
+  <!-- Python 第三方依赖 -->
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-graphviz</exec_depend>
+
+  <!-- 测试依赖 -->
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

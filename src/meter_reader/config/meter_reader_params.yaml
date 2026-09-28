@@ -1,0 +1,16 @@
+meter_reader:
+  ros__parameters:
+    results_dir: "meter_results"
+    model_path: ""
+    total_angle: 90.0
+    max_value: 500.0
+    direction: "cw"
+    unit: "V"
+    poll_interval: 1.0
+    publish_debug_image: true
+    kpts_confidence_threshold: 0.1
+    box_confidence: 0.01
+    file_pattern: "*.ppm"
+    save_debug_images: true
+    upload_enabled: true
+    upload_url: "http://192.168.110.219:5000/api/meter/upload"

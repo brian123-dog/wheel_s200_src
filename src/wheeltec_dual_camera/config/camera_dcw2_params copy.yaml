@@ -1,0 +1,77 @@
+# =============================================================================
+# DaBai DCW2 车载相机 — 严格参照 dabai_dcw2.launch.py 中验证过的默认值
+# SN: CH82C5203DP, PID: 0x06a0
+# =============================================================================
+camera:
+  ros__parameters:
+    camera_name: "camera_dcw2"
+    serial_number: "CH82C5203DP"
+    device_num: 1
+    vendor_id: "0x2bc5"
+    product_id: "0x06a0"
+    connection_delay: 500
+
+    # ---- 彩色（沿用原版 MJPG） ----
+    enable_color: true
+    color_width: 640
+    color_height: 480
+    color_fps: 10
+    color_format: "MJPG"
+    flip_color: false
+    color_qos: "default"
+    color_camera_info_qos: "default"
+    enable_color_auto_exposure: true
+    enable_color_auto_exposure_priority: false
+    color_exposure: -1
+    color_gain: -1
+    enable_color_auto_white_balance: true
+    color_white_balance: -1
+    color_ae_max_exposure: -1
+    color_brightness: -1
+    color_sharpness: -1
+    color_saturation: -1
+    color_contrast: -1
+    color_gamma: -1
+    color_hue: -1
+
+    # ---- 深度（沿用原版 Y11） ----
+    enable_depth: true
+    depth_width: 640
+    depth_height: 400
+    depth_fps: 10
+    depth_format: "Y11"
+    flip_depth: false
+    depth_qos: "default"
+    depth_camera_info_qos: "default"
+    enable_depth_scale: true
+    depth_filter_config: ""
+
+    # ---- 红外（关闭以释放 USB 带宽给彩色+深度） ----
+    enable_ir: false
+    ir_width: 640
+    ir_height: 400
+    ir_fps: 5
+    ir_format: "Y8"
+    flip_ir: false
+    ir_qos: "default"
+    ir_camera_info_qos: "default"
+
+    # ---- 深度（沿用原版 Y11） ----
+    enable_depth: true
+    depth_width: 640
+    depth_height: 400
+    depth_fps: 10
+    depth_format: "Y11"
+
+
+    # ---- 点云 ----
+    enable_point_cloud: true
+    enable_colored_point_cloud: false
+
+    # ---- 其他沿用原版 ----
+    depth_registration: false
+    align_mode: "HW"
+    publish_tf: true
+    enable_soft_filter: true
+    enable_ldp: true
+    log_level: "none"

@@ -1,0 +1,12 @@
+{
+  "reference_image": "reference.png",
+  "target_id": "middle_black_knob",
+  "anchor_polygon": [[455, 20], [960, 20], [960, 480], [455, 480]],
+  "search_polygon": [[535, 340], [665, 340], [665, 467], [535, 467]],
+  "plate_corners": [[562, 366], [637, 368], [634, 443], [560, 441]],
+  "notes": "Manual annotation of one reference image only. Target search area is excluded from global feature matching. Pixel coordinates, not calibrated robot coordinates.",
+  "min_inliers": 20,
+  "min_inlier_ratio": 0.45,
+  "min_anchor_span_fraction": [0.35, 0.35],
+  "max_median_reprojection_px": 2.5
+}
